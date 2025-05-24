@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="https://i.imgur.com/PRjTNqr.png" type="image/png">
+  <title>Чорний Список</title>
+  <style>
+    body {
+      font-family: 'Comfortaa', sans-serif;
+      margin: 0;
+      padding: 0px;
+      display: flex;
+      flex-direction: column;
+      background: #000000 url('https://i.imgur.com/8I4wQ0P.png');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: #fff;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 99%;
+      background-color: rgba(21, 21, 29, 0.9);
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+      overflow-x: auto;
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .logo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 100px;
+      height: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .search-container {
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 10px 40px 10px 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #2D2D34;
+      color: #fff;
+      font-family: 'Comfortaa', sans-serif;
+      font-size: 16px;
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #007BFF;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #fff;
+      background-color: #2D2D34;
+      background: #000000 url('https://i.imgur.com/8I4wQ0P.png'); /* Заміна на реальний URL */
+      background-size: cover; /* Зображення покриває весь екран */
+      background-position: center center; /* Центрування фото */
+      background-repeat: no-repeat; /* Фото не повторюється */
+      background-attachment: fixed; /* Фон статичний при прокручуванні */
+    }
+
+    th {
+      background-color: #007BFF;
+    }
+
+    tr:nth-child(even) {
+      background-color: rgba(21, 21, 29, 0.7);
+    }
+
+    tr:hover {
+      background-color: rgba(68, 68, 68, 0.7);
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #007BFF;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #0056b3;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #15151D;
+      border-radius: 4px;
+    }
+
+    .header-icons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .header-icon {
+      font-size: 24px;
+      margin: 0 15px;
+      color: #007BFF;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        padding: 5px;
+      }
+
+      th, td {
+        padding: 8px;
+        font-size: 14px;
+      }
+
+      #searchInput {
+        font-size: 14px;
+      }
+
+      .logo {
+        width: 60px;
+      }
+
+      .header-icon {
+        font-size: 20px;
+        margin: 0 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://i.imgur.com/PRjTNqr.png" alt="Logo" class="logo">
+    <div class="header-icons">
+    </div>
+    <h1>Заборонені до випуску: чорний список</h1>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Пошук за ID, нікнеймом або кланом...">
+      <i class="fas fa-search search-icon"></i>
+    </div>
+    <table id="blacklistTable">
+      <thead>
+        <tr>
+          <th>ID Гравця</th>
+          <th>Нікнейм</th>
+          <th>Клан</th>
+          <th>Причина</th>
+          <th>Залишилось часу</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Дані будуть додані сюди -->
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+    import { getDatabase, ref, get, push, remove, update } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBzefxFDTHQqXFHg9t08JTiL5EaH8si1oY",
+      authDomain: "dkvs-1ec88.firebaseapp.com",
+      databaseURL: "https://dkvs-1ec88-default-rtdb.firebaseio.com",
+      projectId: "dkvs-1ec88",
+      storageBucket: "dkvs-1ec88.firebaseapp.com",
+      messagingSenderId: "167430647129",
+      appId: "1:167430647129:web:ab209fec7735f20b597048",
+      measurementId: "G-H6LKMLYD10"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const tableBody = document.querySelector("#blacklistTable tbody");
+    const searchInput = document.getElementById('searchInput');
+
+    async function addToBlacklist(playerId, nickname, clan, reason, days) {
+      const blacklistRef = ref(database, "blacklist");
+      const newBlacklistRef = push(blacklistRef);
+
+      const expirationTime = Date.now() + days * 24 * 60 * 60 * 1000;
+
+      await update(newBlacklistRef, {
+        playerId,
+        nickname,
+        clan,
+        reason,
+        days,
+        createdAt: Date.now(),
+        expirationTime,
+      });
+    }
+
+    async function fetchBlacklistData() {
+      const blacklistRef = ref(database, "blacklist");
+
+      try {
+        const snapshot = await get(blacklistRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const keys = Object.keys(data);
+
+          tableBody.innerHTML = "";
+
+          keys.forEach(key => {
+            const item = data[key];
+            const row = createTableRow(item, key);
+            tableBody.appendChild(row);
+          });
+
+          checkAndRemoveExpiredEntries();
+          filterTable();
+        } else {
+          console.log("Дані не знайдено.");
+        }
+      } catch (error) {
+        console.error("Помилка при отриманні даних з Firebase:", error);
+      }
+    }
+
+    function createTableRow(item, key) {
+      const row = document.createElement("tr");
+      const currentTime = Date.now();
+      const timeLeft = item.expirationTime - currentTime;
+
+      let timeString = "Час вичерпано";
+      if (timeLeft > 0) {
+        timeString = formatTimeLeft(timeLeft);
+      }
+
+      row.innerHTML = `
+        <td>${item.playerId || "Помилка ID #124"}</td>
+        <td>${item.nickname || "Помилка NICK #121"}</td>
+        <td>${item.clan || "Помилка CLAN #404"}</td>
+        <td>${item.reason}</td>
+        <td class="time-left" id="time-${key}">${timeString}</td>
+      `;
+
+      return row;
+    }
+
+    function formatTimeLeft(timeLeft) {
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+      let timeString = "";
+      if (days > 0) {
+        if (days === 1) {
+          timeString += `${days} день. `;
+        } else if (days >= 2 && days <= 4) {
+          timeString += `${days} дня. `;
+        } else {
+          timeString += `${days} днів. `;
+        }
+      }
+      if (hours > 0 || days > 0) timeString += `${hours} год. `;
+      timeString += `${minutes} хв.`;
+
+      return timeString.trim();
+    }
+
+    async function checkAndRemoveExpiredEntries() {
+      const blacklistRef = ref(database, "blacklist");
+
+      try {
+        const snapshot = await get(blacklistRef);
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const keys = Object.keys(data);
+
+          keys.forEach(key => {
+            const item = data[key];
+            const currentTime = Date.now();
+
+            if (currentTime >= item.expirationTime) {
+              remove(ref(database, `blacklist/${key}`));
+              const row = document.querySelector(`#time-${key}`).parentElement;
+              if (row) {
+                row.remove();
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Помилка при перевірці та оновленні відліку:", error);
+      }
+    }
+
+    function updateTimeLeft() {
+      const rows = document.querySelectorAll("tbody tr");
+      rows.forEach(row => {
+        const timeCell = row.querySelector(".time-left");
+        const timeLeftText = timeCell.textContent.trim();
+
+        if (timeLeftText !== "Час вичерпано") {
+          const timeParts = timeLeftText.split(". ");
+          let totalMinutes = 0;
+
+          timeParts.forEach(part => {
+            const [value, unit] = part.split(" ");
+            if (unit.startsWith("день") || unit.startsWith("дня") || unit.startsWith("днів")) totalMinutes += parseInt(value) * 24 * 60;
+            else if (unit.startsWith("год")) totalMinutes += parseInt(value) * 60;
+            else if (unit.startsWith("хв")) totalMinutes += parseInt(value);
+          });
+
+          totalMinutes -= 1;
+
+          if (totalMinutes <= 0) {
+            timeCell.textContent = "Час вичерпано";
+          } else {
+            const newTimeLeft = totalMinutes * 60 * 1000;
+            timeCell.textContent = formatTimeLeft(newTimeLeft);
+          }
+        }
+      });
+    }
+
+    function filterTable() {
+      const filter = searchInput.value.toLowerCase();
+      const rows = tableBody.getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const playerId = rows[i].getElementsByTagName("td")[0];
+        const nickname = rows[i].getElementsByTagName("td")[1];
+        const clan = rows[i].getElementsByTagName("td")[2];
+        if (playerId && nickname && clan) {
+          const playerIdText = playerId.textContent || playerId.innerText;
+          const nicknameText = nickname.textContent || nickname.innerText;
+          const clanText = clan.textContent || clan.innerText;
+          if (playerIdText.toLowerCase().indexOf(filter) > -1 || 
+              nicknameText.toLowerCase().indexOf(filter) > -1 ||
+              clanText.toLowerCase().indexOf(filter) > -1) {
+            rows[i].style.display = "";
+          } else {
+            rows[i].style.display = "none";
+          }
+        }
+      }
+    }
+
+    searchInput.addEventListener('input', filterTable);
+
+    window.onload = () => {
+      fetchBlacklistData();
+      setInterval(fetchBlacklistData, 3000);
+      setInterval(updateTimeLeft, 60000);
+    };
+  </script>
+</body>
+</html>
